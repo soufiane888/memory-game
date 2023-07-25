@@ -1,14 +1,31 @@
 .App {
+  text-align: center;
+  margin: 0 300px 0px 300px;
+
+}
+
+.timer {
+  font-size: 20px;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.status {
+  font-size: 24px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.game-board {
   display: flex;
   flex-wrap: wrap;
-  max-width: 600px;
-  margin: 0 auto;
+  justify-content: center;
 }
 
 .card {
-  width: 100px;
-  height: 150px;
-  margin: 10px;
+  width: calc(20% - 10px); /* Pour afficher 5 cartes par ligne, chaque carte doit avoir 20% de la largeur du conteneur, en soustrayant les marges */
+  height: 90px;
+  margin: 5px; /* Marge de 5px entre les cartes */
   perspective: 800px;
   cursor: pointer;
   transition: transform 0.6s;
@@ -22,4 +39,20 @@
 
 .card.flipped {
   transform: rotateY(180deg);
+}
+
+button {
+  font-size: 16px;
+  padding: 10px 20px;
+  margin-top: 20px;
+  cursor: pointer;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #0056b3;
 }

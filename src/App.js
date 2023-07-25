@@ -2,35 +2,46 @@ import React, { useState, useEffect } from 'react';
 import './App.css';
 
 const App = () => {
-  const [cards, setCards] = useState([
-    { id: 1, img: 'image1.jpg', isFlipped: false },
-    { id: 2, img: 'image2.jpg', isFlipped: false },
-    { id: 1, img: 'image3.jpg', isFlipped: false },
-    { id: 2, img: 'image4.jpg', isFlipped: false },
-    { id: 1, img: 'image5.jpg', isFlipped: false },
-    { id: 2, img: 'image6.jpg', isFlipped: false },
-    { id: 1, img: 'image7.jpg', isFlipped: false },
-    { id: 2, img: 'image8.jpg', isFlipped: false },
-    { id: 1, img: 'image9.jpg', isFlipped: false },
-    { id: 2, img: 'image10.jpg', isFlipped: false },
-    { id: 1, img: 'image1c.jpg', isFlipped: false },
-    { id: 2, img: 'image2c.jpg', isFlipped: false },
-    { id: 1, img: 'image3c.jpg', isFlipped: false },
-    { id: 2, img: 'image4c.jpg', isFlipped: false },
-    { id: 1, img: 'image5c.jpg', isFlipped: false },
-    { id: 2, img: 'image6c.jpg', isFlipped: false },
-    { id: 1, img: 'image7c.jpg', isFlipped: false },
-    { id: 2, img: 'image8c.jpg', isFlipped: false },
-    { id: 1, img: 'image9c.jpg', isFlipped: false },
-    { id: 1, img: 'image10c.jpg', isFlipped: false },
-    // Ajoutez d'autres paires d'images ici
-  ]);
+  const images = ['image1.jpg', 'image2.jpg', 'image3.jpg', 'image4.jpg', 'image5.jpg',
+  'image6.jpg', 'image7.jpg', 'image8.jpg', 'image9.jpg', 'image10.jpg'];
+  const totalCards = images.length * 2;
 
+  const shuffleArray = (array) => {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+  };
+
+  const generateCards = () => {
+    const shuffledImages = shuffleArray([...images, ...images]);
+
+    const cards = shuffledImages.map((img, index) => ({
+      id: index + 1,
+      img,
+      isFlipped: false,
+      matched: false,
+    }));
+
+    return cards;
+  };
+
+  const [cards, setCards] = useState(generateCards());
   const [flippedCount, setFlippedCount] = useState(0);
   const [flippedIndexes, setFlippedIndexes] = useState([]);
+  const [gameStarted, setGameStarted] = useState(false);
+  const [gameOver, setGameOver] = useState(false);
+  const [secondsRemaining, setSecondsRemaining] = useState(60); // Temps de jeu (60 secondes dans cet exemple)
+  const [timerInterval, setTimerInterval] = useState(null);
 
   const handleCardClick = (index) => {
-    if (flippedCount < 2 && !flippedIndexes.includes(index)) {
+    if (!gameStarted) {
+      setGameStarted(true);
+      startTimer();
+    }
+
+    if (!gameOver && flippedCount < 2 && !flippedIndexes.includes(index)) {
       setCards((prevCards) =>
         prevCards.map((card, i) =>
           i === index ? { ...card, isFlipped: true } : card
@@ -42,7 +53,6 @@ const App = () => {
     }
   };
 
-  // Fonction pour vérifier les cartes retournées
   const checkFlippedCards = () => {
     const firstIndex = flippedIndexes[0];
     const secondIndex = flippedIndexes[1];
@@ -51,6 +61,8 @@ const App = () => {
     if (newCards[firstIndex].img === newCards[secondIndex].img) {
       newCards[firstIndex].isFlipped = true;
       newCards[secondIndex].isFlipped = true;
+      newCards[firstIndex].matched = true;
+      newCards[secondIndex].matched = true;
     } else {
       newCards[firstIndex].isFlipped = false;
       newCards[secondIndex].isFlipped = false;
@@ -69,20 +81,66 @@ const App = () => {
     }
   }, [flippedCount]);
 
+  useEffect(() => {
+    if (gameOver) {
+      clearInterval(timerInterval);
+    }
+  }, [gameOver, timerInterval]);
+
+  useEffect(() => {
+    if (secondsRemaining === 0) {
+      setGameOver(true);
+    }
+  }, [secondsRemaining]);
+
+  const startTimer = () => {
+    const interval = setInterval(() => {
+      setSecondsRemaining((prevSeconds) => prevSeconds - 1);
+    }, 1000);
+
+    setTimerInterval(interval);
+  };
+
+  const restartGame = () => {
+    setGameStarted(false);
+    setGameOver(false);
+    setSecondsRemaining(60);
+    setFlippedCount(0);
+    setFlippedIndexes([]);
+    setCards(generateCards());
+    clearInterval(timerInterval);
+  };
+
   return (
-    <div className="App">
-      {cards.map((card, index) => (
-        <div
-          key={card.id}
-          className={`card ${card.isFlipped ? 'flipped' : ''}`}
-          onClick={() => handleCardClick(index)}
-        >
-          <img
-            src={card.isFlipped ? `/images/${card.img}` : '/images/back.jpg'}
-            alt="Card"
-          />
-        </div>
-      ))}
+  <div>
+      <div className="timer">Temps restant : {secondsRemaining} secondes</div>
+      {gameStarted ? (
+        gameOver ? (
+          <div className="status">Vous avez perdu.</div>
+        ) : (
+          <div className="status">À vous de jouer !</div>
+        )
+      ) : (
+        <div className="status">Cliquez pour commencer</div>
+      )}
+    
+        <div className="App">
+      <div className="game-board">
+        {cards.map((card, index) => (
+          <div
+            key={card.id}
+            className={`card ${card.isFlipped ? 'flipped' : ''} ${card.matched ? 'matched' : ''}`}
+            onClick={() => handleCardClick(index)}
+          >
+            <img
+              src={card.isFlipped || card.matched ? `/images/${card.img}` : '/images/back.jpg'}
+              alt="Card"
+            />
+          </div>
+        ))}
+      </div>
+      {gameOver && <button onClick={restartGame}>Rejouer</button>}
+    </div>
     </div>
   );
 };
