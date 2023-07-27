@@ -32,7 +32,7 @@ const App = () => {
   const [flippedIndexes, setFlippedIndexes] = useState([]);
   const [gameStarted, setGameStarted] = useState(false);
   const [gameOver, setGameOver] = useState(false);
-  const [secondsRemaining, setSecondsRemaining] = useState(60); // Temps de jeu (60 secondes dans cet exemple)
+  const [secondsRemaining, setSecondsRemaining] = useState(10); // Temps de jeu (60 secondes dans cet exemple)
   const [timerInterval, setTimerInterval] = useState(null);
 
   const handleCardClick = (index) => {
@@ -52,6 +52,15 @@ const App = () => {
       setFlippedCount(flippedCount + 1);
     }
   };
+  useEffect(() => {  
+    if (!gameOver) {
+    const matchedCards = cards.filter((card) => card.matched);         
+    if (matchedCards.length === totalCards) {       
+    clearInterval(timerInterval);
+    setGameOver(true); 
+          }
+        }
+      }, [cards, gameOver, timerInterval, totalCards]);
 
   const checkFlippedCards = () => {
     const firstIndex = flippedIndexes[0];
@@ -112,16 +121,21 @@ const App = () => {
   };
 
   return (
-  <div>
-      <div className="timer">Temps restant : {secondsRemaining} secondes</div>
+ <div>
+          
+      <div className="timer">{cards.filter((card) => card.matched).length === totalCards | secondsRemaining == 0 ?(gameOver&&<button onClick={restartGame}>Rejouer</button>):(`Temps restant : ${secondsRemaining} secondes`)}</div>
       {gameStarted ? (
         gameOver ? (
-          <div className="status">Vous avez perdu.</div>
+          <div className="status">{secondsRemaining === 0?'Vous avez perdu.':'Vous avez gagné !'}</div>
         ) : (
-          <div className="status">À vous de jouer !</div>
+          <div className="status">
+          {`${
+            cards.filter((card) => card.matched).length === totalCards ? 'Vous avez gagné !' : 'À vous de jouer !'
+          }`}
+        </div>
         )
       ) : (
-        <div className="status">Cliquez pour commencer</div>
+        <div className="status">Cliquez sur une carte pour commencer le jeu </div>
       )}
     
         <div className="App">
@@ -139,7 +153,7 @@ const App = () => {
           </div>
         ))}
       </div>
-      {gameOver && <button onClick={restartGame}>Rejouer</button>}
+
     </div>
     </div>
   );
