@@ -32,7 +32,7 @@ const App = () => {
   const [flippedIndexes, setFlippedIndexes] = useState([]);
   const [gameStarted, setGameStarted] = useState(false);
   const [gameOver, setGameOver] = useState(false);
-  const [secondsRemaining, setSecondsRemaining] = useState(10); // Temps de jeu (60 secondes dans cet exemple)
+  const [secondsRemaining, setSecondsRemaining] = useState(60); // Temps de jeu (60 secondes dans cet exemple)
   const [timerInterval, setTimerInterval] = useState(null);
 
   const handleCardClick = (index) => {
